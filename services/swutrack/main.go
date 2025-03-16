@@ -68,9 +68,7 @@ func main() {
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
 	// Setup services.
-	apiService := &httpapi.Service{
-		Port: conf.Port,
-	}
+	apiService := httpapi.New(conf.Port)
 
 	startServices(ctx, sctx, &wg, errChan, apiService)
 

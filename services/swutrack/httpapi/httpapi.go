@@ -18,9 +18,17 @@ import (
 
 // Service represents an HTTP server instance that can be started and stopped.
 type Service struct {
-	Port string
-
+	port   string
 	server *http.Server
+}
+
+// New creates and returns a new Service instance with the specified port.
+// The port parameter should be a valid port number as a string (e.g. "8080").
+// The returned Service will not start listening until Start is called.
+func New(port string) *Service {
+	return &Service{
+		port: port,
+	}
 }
 
 // Name returns the name of the service.
@@ -41,7 +49,7 @@ func (s *Service) Start(errChan chan svcerr.ServiceErr) {
 	mux.HandleFunc("/hello", handleHello)
 
 	s.server = &http.Server{
-		Addr:    "0.0.0.0:" + s.Port,
+		Addr:    "0.0.0.0:" + s.port,
 		Handler: mux,
 	}
 
