@@ -10,3 +10,6 @@ dc-up: ## Spins up docker compose.
 
 dc-down: ## Shut down docker compose.
 	docker compose down
+
+test: ## Run all tests.
+	cd service; go test -count 1 ./...
