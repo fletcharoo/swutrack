@@ -1,8 +1,8 @@
 FROM golang:latest AS build
 WORKDIR /app
-COPY ./ ./
+COPY ./service ./
 RUN go mod download
-RUN go build ./services/swutrack/main.go
+RUN go build ./main.go
 
 FROM debian:latest
 COPY --from=build /app/main /app/main

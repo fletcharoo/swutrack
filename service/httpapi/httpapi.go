@@ -13,7 +13,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"swutrack/services/swutrack/svcerr"
+	"swutrack/svcerr"
 )
 
 // Service represents an HTTP server instance that can be started and stopped.
