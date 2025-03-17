@@ -6,3 +6,11 @@ services:
       PORT: "8080"
     ports:
       - "8080:8080"
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: swutrack
+    ports:
+      - "5432:5432"
