@@ -42,8 +42,8 @@ func loadConfig() (conf config) {
 		log.Fatalf("failed to load environment variables: %s", err.Error())
 	}
 
-	if conf.Port == "" {
-		log.Fatalf("Port cannot be empty")
+	if err := conf.validate(); err != nil {
+		log.Fatalf("failed to validate config: %s", err.Error())
 	}
 
 	return conf

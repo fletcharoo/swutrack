@@ -1,6 +1,9 @@
 package main
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 // config holds the application configuration loaded from environment
 // variables.
@@ -12,4 +15,14 @@ type config struct {
 	// ShutdownTimeout specifies how long to wait for services to gracefully
 	// shutdown before forcefully terminating them.
 	ShutdownTimeout time.Duration `snest:"SHUTDOWN_TIMEOUT"`
+}
+
+// validate checks that the configuration is valid.
+func (c config) validate() (err error) {
+	if c.Port == "" {
+		err = fmt.Errorf("Port cannot be empty")
+		return
+	}
+
+	return nil
 }
