@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -34,64 +33,39 @@ type config struct {
 	ShutdownTimeout time.Duration `snest:"SHUTDOWN_TIMEOUT"`
 }
 
-// loadConfig loads and validates configuration from environment variables.
-func loadConfig() (conf config, err error) {
-	if err = snest.Load(&conf); err != nil {
-		err = fmt.Errorf("failed to load environment variables: %w", err)
-		return
-	}
-
-	if conf.Port == "" {
-		err = fmt.Errorf("Port cannot be empty")
-		return
-	}
-
-	return conf, nil
-}
-
 func main() {
-	// Setup.
 	log.Println("starting up...")
 	ctx := context.Background()
 	sctx, shutdown := context.WithCancel(ctx)
 	errChan := make(chan svcerr.ServiceErr)
 	var wg sync.WaitGroup
+	conf := loadConfig()
+	sigChan := createSigChan()
 
-	// Load configuration.
-	conf, err := loadConfig()
-	if err != nil {
-		log.Fatalf("failed to load config: %s", err.Error())
-	}
-
-	// Listen for OS signals.
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
-
-	// Setup services.
 	apiService := httpapi.New(conf.Port)
-
 	startServices(ctx, sctx, &wg, errChan, apiService)
 
-	// Graceful shutdown.
-	select {
-	case err = <-errChan:
-		log.Printf("service error: %s", err.Error())
-		shutdown()
-	case <-sigChan:
-		shutdown()
-	case <-sctx.Done():
+	waitGracefulShutdown(sctx, shutdown, errChan, sigChan, &wg, conf)
+}
+
+// loadConfig loads and validates configuration from environment variables.
+func loadConfig() (conf config) {
+	if err := snest.Load(&conf); err != nil {
+		log.Fatalf("failed to load environment variables: %s", err.Error())
 	}
 
-	log.Println("shutting down...")
-	go func() {
-		select {
-		case <-time.After(conf.ShutdownTimeout):
-			log.Fatalf("shutdown timeout reached")
-		}
-	}()
+	if conf.Port == "" {
+		log.Fatalf("Port cannot be empty")
+	}
 
-	wg.Wait()
-	log.Println("shutdown successful")
+	return conf
+}
+
+// createSigChan creates and returns a buffered channel for OS signals.
+func createSigChan() (sigChan chan os.Signal) {
+	sigChan = make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+	return sigChan
 }
 
 // startServices starts the provided services and manages their lifecycle.
@@ -114,4 +88,26 @@ func startServices(ctx context.Context, sctx context.Context, wg *sync.WaitGroup
 			}
 		}()
 	}
+}
+
+func waitGracefulShutdown(sctx context.Context, shutdown context.CancelFunc, errChan chan svcerr.ServiceErr, sigChan chan os.Signal, wg *sync.WaitGroup, conf config) {
+	select {
+	case err := <-errChan:
+		log.Printf("service error: %s", err.Error())
+		shutdown()
+	case <-sigChan:
+		shutdown()
+	case <-sctx.Done():
+	}
+
+	log.Println("shutting down...")
+	go func() {
+		select {
+		case <-time.After(conf.ShutdownTimeout):
+			log.Fatalf("shutdown timeout reached")
+		}
+	}()
+
+	wg.Wait()
+	log.Println("shutdown successful")
 }
