@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"database/sql"
+	"embed"
 	"log"
 	"os"
 	"os/signal"
@@ -11,8 +13,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/fletcharoo/snest"
+	"github.com/kelseyhightower/envconfig"
+	_ "github.com/lib/pq"
+	"github.com/pressly/goose/v3"
 )
+
+//go:embed data/db/postgres/migrations/*.sql
+var postgresMigrations embed.FS
 
 // service defines the interface for manageable services in the applicatino.
 type service interface {
@@ -30,6 +37,8 @@ func main() {
 	conf := loadConfig()
 	sigChan := createSigChan()
 
+	migrateDB(conf)
+
 	apiService := httpapi.New(conf.Port)
 	startServices(ctx, sctx, &wg, errChan, apiService)
 
@@ -38,7 +47,7 @@ func main() {
 
 // loadConfig loads and validates configuration from environment variables.
 func loadConfig() (conf config) {
-	if err := snest.Load(&conf); err != nil {
+	if err := envconfig.Process("swutrack", &conf); err != nil {
 		log.Fatalf("failed to load environment variables: %s", err.Error())
 	}
 
@@ -54,6 +63,29 @@ func createSigChan() (sigChan chan os.Signal) {
 	sigChan = make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	return sigChan
+}
+
+// migrateDB connects to the postgres database and runs any pending migrations.
+// It uses goose to manage migrations and will fatally exit if any errors occur
+// during the migration process.
+func migrateDB(conf config) {
+	db, err := sql.Open("postgres", conf.PostgresConnURL)
+	if err != nil {
+		log.Fatalf("failed to connect to database: %s", err.Error())
+	}
+	defer db.Close()
+
+	goose.SetBaseFS(postgresMigrations)
+
+	if err := goose.SetDialect("postgres"); err != nil {
+		log.Fatalf("failed to set dialect: %s", err.Error())
+	}
+
+	if err := goose.Up(db, "data/db/postgres/migrations"); err != nil {
+		log.Fatalf("failed to run migrations: %s", err.Error())
+	}
+
+	log.Println("migrations completed successfully")
 }
 
 // startServices starts the provided services and manages their lifecycle.
