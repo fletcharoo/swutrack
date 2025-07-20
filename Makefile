@@ -10,6 +10,11 @@ help: ## Show this help.
 test: ## Run all tests.
 	go test -count 1 ./...
 
+.PHONY: test/coverage
+test/coverage: ## Generate test coverage report.
+	@if [ -f temp/coverage.html ]; then rm temp/coverage.html; fi
+	go test -v -coverprofile=temp/coverage.out ./... && go tool cover -html=temp/coverage.out -o temp/coverage.html
+
 .PHONY: dc/up
 dc/up: ## Start docker compose.
 	docker compose up --build -d
