@@ -1,0 +1,9 @@
+services:
+  swutrack:
+    build:
+      dockerfile: ./service/Dockerfile
+    environment:
+      PORT: "8080"
+      SHUTDOWN_TIMEOUT: "30s"
+    ports:
+      - "8080:8080"
