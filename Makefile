@@ -22,3 +22,7 @@ dc/up: ## Start docker compose.
 .PHONY: dc/down
 dc/down: ## Stop docker compose.
 	docker compose down
+
+.PHONY: go/fmt
+go/fmt: ## Run go formatter.
+	go fmt ./...
