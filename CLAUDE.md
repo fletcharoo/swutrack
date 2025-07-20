@@ -40,7 +40,10 @@ When implementing features, prioritize:
 - Application runs on port 8080
 
 ### Important Files
-- **`service/main.go`**: Main application entry point with HTTP server implementation
+- **`service/main.go`**: Application entry point that initializes and starts the HTTP server
+- **`service/transport/httpapi/server.go`**: HTTP server implementation with configuration and lifecycle management
+- **`service/transport/httpapi/routes.go`**: Route configuration that maps endpoints to handlers
+- **`service/transport/httpapi/handlers.go`**: HTTP request handlers implementation
 - **`go.mod`**: Go module definition file for dependency management
 - **`Makefile`**: Build automation and development commands
 - **`compose.yaml`**: Docker Compose configuration for local development environment
@@ -53,22 +56,35 @@ When implementing features, prioritize:
 ### Project Structure
 ```
 swutrack/
-├── service/              # Go application code
-│   ├── main.go          # HTTP server entry point
-│   └── Dockerfile       # Container build configuration
-├── docs/                # Project documentation
-│   ├── api-endpoints.md # API specification
-│   ├── db-schema.sql    # Database design
+├── service/                     # Go application code
+│   ├── transport/              # Transport layer
+│   │   └── httpapi/           # HTTP API implementation
+│   │       ├── handlers.go    # Request handlers
+│   │       ├── routes.go      # Route definitions
+│   │       └── server.go      # HTTP server setup
+│   ├── main.go                # Application entry point
+│   └── Dockerfile             # Container build configuration
+├── docs/                       # Project documentation
+│   ├── api-endpoints.md       # API specification
+│   ├── db-schema.sql          # Database design
 │   └── star-wars-unlimited.md # Domain knowledge
-├── temp/                # Temporary files (git ignored)
-├── .claude/             # Claude AI configuration
-│   └── commands/        # Custom AI commands
-├── go.mod               # Go module definition
-├── Makefile            # Build automation
-├── compose.yaml        # Docker Compose setup
-├── README.md           # Project overview
-├── LICENSE             # MIT License
-└── .gitignore          # Git ignore rules
+├── .claude/                    # Claude AI configuration
+│   ├── commands/              # Custom AI commands
+│   │   ├── fcc:commit.md
+│   │   ├── fcc:create-prd.md
+│   │   ├── fcc:plan.md
+│   │   ├── fcc:review.md
+│   │   ├── fcc:update-claudemd.md
+│   │   └── fcc:update-documentation.md
+│   └── settings.local.json    # Local Claude settings
+├── temp/                       # Temporary files (git ignored)
+├── go.mod                      # Go module definition
+├── Makefile                    # Build automation
+├── compose.yaml                # Docker Compose setup
+├── README.md                   # Project overview
+├── LICENSE                     # MIT License
+├── CLAUDE.md                   # Project instructions for AI
+└── .gitignore                  # Git ignore rules
 ```
 
 ### Documentation
@@ -128,6 +144,8 @@ In addition to using idiomatic Go conventions, all code you write **MUST** align
 - All code **MUST** align with the single responsibility principle
 - All code **MUST** align with separation of concerns
 - Only use pointers when data needs to be mutated or when dealing with large structs where copying would be inefficient. Return values by value when possible
+- Always put an empty newline a the end of files
+- **ONLY** use an empty return if it's an error return. If you're returning data or a nil error, make that explicit through the return.
 
 ### Clarifying Questions
 When you ask the user clarifying questions, you **MUST** follow the following rules:
