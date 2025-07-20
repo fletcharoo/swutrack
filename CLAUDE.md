@@ -40,10 +40,36 @@ When implementing features, prioritize:
 - Application runs on port 8080
 
 ### Important Files
-> This section will contain the location of key files
+- **`service/main.go`**: Main application entry point with HTTP server implementation
+- **`go.mod`**: Go module definition file for dependency management
+- **`Makefile`**: Build automation and development commands
+- **`compose.yaml`**: Docker Compose configuration for local development environment
+- **`service/Dockerfile`**: Multi-stage Docker build configuration for the application
+- **`CLAUDE.md`**: Project instructions and coding standards for AI assistance
+- **`docs/api-endpoints.md`**: Comprehensive API endpoint documentation
+- **`docs/db-schema.sql`**: Complete database schema design
+- **`docs/star-wars-unlimited.md`**: Domain knowledge documentation for game mechanics
 
 ### Project Structure
-> This section will contain a high-level overview of the project structure
+```
+swutrack/
+├── service/              # Go application code
+│   ├── main.go          # HTTP server entry point
+│   └── Dockerfile       # Container build configuration
+├── docs/                # Project documentation
+│   ├── api-endpoints.md # API specification
+│   ├── db-schema.sql    # Database design
+│   └── star-wars-unlimited.md # Domain knowledge
+├── temp/                # Temporary files (git ignored)
+├── .claude/             # Claude AI configuration
+│   └── commands/        # Custom AI commands
+├── go.mod               # Go module definition
+├── Makefile            # Build automation
+├── compose.yaml        # Docker Compose setup
+├── README.md           # Project overview
+├── LICENSE             # MIT License
+└── .gitignore          # Git ignore rules
+```
 
 ### Documentation
 - **Database schema:** `docs/db-schema.sql`
