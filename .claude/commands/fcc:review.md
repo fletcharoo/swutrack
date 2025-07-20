@@ -13,9 +13,7 @@ To guide an AI assistant in performing a complete code and documentation review 
 7. **Code Quality Review:** Assess naming conventions, code organization, and adherence to established code style & conventions. Look for code duplication, complex functionality, and lack of modularity. Identify areas that would benefit from refactoring or improved readability.
 8. **Static Analysis:** Check for bugs, bad coding style, and potential logic errors. Identify dead code or unused variables/functions.
 9. **Security Analysis:** Identify hardcoded secrets, insecure coding patterns, or outdated dependencies. If the code uses external services or APIs, ensure proper handling of secrets and credentials.
-10. **Markdown Documentation Review:** Analyze all markdown files in this repository for documentation that is outdated with the current implementation.
-11. **Inline Comments Review:** Analyze all inline code comments in this repository for documentation that is outdated with the current implementation.
-12. **Generate Report:** Using all your findings from above, generate the report using the template described below and save it to `temp/report.md`.
+10. **Generate Report:** Using all your findings from above, generate the report using the template described below and save it to `temp/report.md`.
 
 ## Report Structure
 1. **Overview:** Briefly describe the findings in this report.
