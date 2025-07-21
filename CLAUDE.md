@@ -41,8 +41,8 @@ When implementing features, prioritize:
 - Application runs on port 8080
 
 ### Important Files
-- **`service/main.go`**: Application entry point that initializes and starts the HTTP server
-- **`service/transport/httpapi/server.go`**: HTTP server implementation with configuration and lifecycle management
+- **`service/main.go`**: Application entry point with service lifecycle management and graceful shutdown handling
+- **`service/transport/httpapi/server.go`**: HTTP server implementation with service interface for graceful shutdown
 - **`service/transport/httpapi/routes.go`**: Route configuration that maps endpoints to handlers
 - **`service/transport/httpapi/handlers.go`**: HTTP request handlers implementation
 - **`go.mod`**: Go module definition file for dependency management
@@ -62,12 +62,12 @@ swutrack/
 │   │   └── httpapi/           # HTTP API implementation
 │   │       ├── handlers.go    # Request handlers
 │   │       ├── routes.go      # Route definitions
-│   │       └── server.go      # HTTP server setup
-│   ├── main.go                # Application entry point
+│   │       └── server.go      # HTTP server with service interface
+│   ├── main.go                # Application entry point with graceful shutdown
 │   └── Dockerfile             # Container build configuration
 ├── docs/                       # Project documentation
 │   ├── api-endpoints.md       # API specification
-│   ├── db-schema.sql          # Database design
+│   ├── db-schema.sql          # Database schema design
 │   └── star-wars-unlimited.md # Domain knowledge
 ├── .claude/                    # Claude AI configuration
 │   ├── commands/              # Custom AI commands

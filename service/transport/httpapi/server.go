@@ -3,14 +3,20 @@
 package httpapi
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"net/http"
+	"sync"
 )
 
 // Server encapsulates the HTTP server and its configuration.
+// It implements the service interface for lifecycle management.
 type Server struct {
-	httpServer *http.Server
-	mux        *http.ServeMux
+	httpServer *http.Server  // The underlying HTTP server instance
+	mux        *http.ServeMux // HTTP request multiplexer for routing
+	mu         sync.Mutex     // Protects concurrent access to isRunning
+	isRunning  bool           // Tracks whether the server is currently running
 }
 
 // NewServer creates and initializes a new HTTP server instance.
@@ -41,9 +47,52 @@ func NewServer(addr string) (server *Server, err error) {
 	return server, nil
 }
 
-// Start begins listening for HTTP requests on the configured address.
-// This method blocks until the server is shut down or encounters an error.
-func (s *Server) Start() (err error) {
+// Name returns the service's display name for logging purposes.
+func (s *Server) Name() string {
+	return "HTTP Server"
+}
+
+// Start begins the service operation, sending any errors to the provided channel.
+// This method starts the server in a non-blocking way and returns immediately.
+func (s *Server) Start(errChan chan error) {
+	if s == nil {
+		errChan <- fmt.Errorf("server cannot be nil")
+		return
+	}
+
+	if s.httpServer == nil {
+		errChan <- fmt.Errorf("HTTP server is not initialized")
+		return
+	}
+
+	// Check if server is already running
+	s.mu.Lock()
+	if s.isRunning {
+		s.mu.Unlock()
+		errChan <- fmt.Errorf("server is already running")
+		return
+	}
+
+	// Mark server as running
+	s.isRunning = true
+	s.mu.Unlock()
+
+	// Start the server in a goroutine
+	go func() {
+		log.Printf("HTTP Server listening on %s", s.httpServer.Addr)
+		err := s.httpServer.ListenAndServe()
+		if err != nil && err != http.ErrServerClosed {
+			errChan <- fmt.Errorf("HTTP server stopped unexpectedly: %w", err)
+		}
+		// Server has stopped
+		s.mu.Lock()
+		s.isRunning = false
+		s.mu.Unlock()
+	}()
+}
+
+// Stop gracefully shuts down the service within the provided context deadline.
+func (s *Server) Stop(ctx context.Context) (err error) {
 	if s == nil {
 		err = fmt.Errorf("server cannot be nil")
 		return
@@ -54,11 +103,13 @@ func (s *Server) Start() (err error) {
 		return
 	}
 
-	err = s.httpServer.ListenAndServe()
+	log.Printf("HTTP Server shutting down...")
+	err = s.httpServer.Shutdown(ctx)
 	if err != nil {
-		err = fmt.Errorf("failed to start HTTP server: %w", err)
+		err = fmt.Errorf("failed to shutdown HTTP server: %w", err)
 		return
 	}
 
+	log.Printf("HTTP Server shutdown complete")
 	return nil
 }
