@@ -25,6 +25,7 @@ When implementing features, prioritize:
 - `make dc/up`: Start local environment
 - `make dc/down`: Stop local environment
 - `make migration/add`: Create a new database migration
+- `make go/fmt`: Format all Go files
 
 ### Technical Stack
 - **Backend:** Go with REST API
