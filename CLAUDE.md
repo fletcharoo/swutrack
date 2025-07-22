@@ -22,6 +22,7 @@ When implementing features, prioritize:
 
 ### Common Developer Commands
 - `make test`: Run all tests
+- `make test/coverage`: Run all tests and generate test coverage report
 - `make dc/up`: Start local environment
 - `make dc/down`: Stop local environment
 - `make migration/add`: Create a new database migration
@@ -141,7 +142,12 @@ In addition to using idiomatic Go conventions, all code you write **MUST** align
 - All code **MUST** be documented with comments that align with godoc standards
 - Test assertions **MUST** be done with the `stretchr/testify/assert` package
 - Test requirements **MUST** be done with the `stretchr/testify/require` package
+- All `assert` and `require` calls **MUST** include meaningful `msgAndArgs` parameters to provide context when assertions fail (e.g., `assert.Equal(t, expected, actual, "user ID should match the requested ID")`)
+- Use `require` instead of `assert` when the test needs to access properties or methods of the result to prevent panics (e.g., use `require.NotNil(t, user)` before `assert.Equal(t, "John", user.Name)`, or `require.Error(t, err)` before `assert.Contains(t, err.Error(), "expected message")`)
+- Test expectations **MUST** be defined as variables at the start of each test rather than using inline literals (e.g., `expectedStatus := http.StatusOK` instead of `assert.Equal(t, http.StatusOK, ...)`)
 - Table tests **MUST** align with the template described in the `Examples` section
+- Table tests **MUST NOT** contain conditional logic (if/else) in the test execution - each test case should test one specific scenario with linear assertions
+- All generated files for testing and debugging (e.g., `coverage.out`, `coverage.html`, profiling outputs) **MUST** be placed in the `temp/` folder as it is excluded from version control
 - All code **MUST** align with the single responsibility principle
 - All code **MUST** align with separation of concerns
 - Only use pointers when data needs to be mutated or when dealing with large structs where copying would be inefficient. Return values by value when possible
@@ -181,6 +187,41 @@ func Test_[Insert test name](t *testing.T) {
             // run the test and check expectations
         })
     }
+}
+```
+
+### Require vs Assert Example
+```go
+func Test_ServiceMethod_RequireBeforeAccess(t *testing.T) {
+    // Example 1: Error case - Use require.Error before accessing error properties
+    t.Run("error case", func(t *testing.T) {
+        // Setup expectations
+        expectedErrorMessage := "user not found"
+        
+        // Act
+        result, err := service.GetUser("invalid-id")
+        
+        // Assert - Use require before accessing properties that could panic
+        require.Error(t, err, "GetUser should return an error for invalid ID")
+        assert.Contains(t, err.Error(), expectedErrorMessage, "error message should indicate user not found")
+        assert.Nil(t, result, "result should be nil when error is returned")
+    })
+    
+    // Example 2: Success case - Use require.NotNil before accessing object properties
+    t.Run("success case", func(t *testing.T) {
+        // Setup expectations
+        expectedName := "John Doe"
+        expectedAge := 30
+        
+        // Act
+        user, err := service.GetUser("valid-id")
+        
+        // Assert - Use require before accessing properties that could panic
+        require.NoError(t, err, "GetUser should not return an error for valid ID")
+        require.NotNil(t, user, "user should not be nil when no error is returned")
+        assert.Equal(t, expectedName, user.Name, "user name should match expected value")
+        assert.Equal(t, expectedAge, user.Age, "user age should match expected value")
+    })
 }
 ```
 
