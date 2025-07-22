@@ -9,6 +9,13 @@ import (
 // setupRoutes configures all HTTP routes for the server.
 // This method registers all endpoints and their corresponding handlers.
 func (s *Server) setupRoutes() (err error) {
+	// Use production handlers
+	return s.setupRoutesWithHandlers(helloHandler)
+}
+
+// setupRoutesWithHandlers configures all HTTP routes with the provided handlers.
+// This internal method allows for dependency injection during testing.
+func (s *Server) setupRoutesWithHandlers(helloHandler handlerFunc) (err error) {
 	if s == nil {
 		err = fmt.Errorf("server cannot be nil")
 		return

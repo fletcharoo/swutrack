@@ -19,6 +19,15 @@ type Server struct {
 	isRunning  bool           // Tracks whether the server is currently running
 }
 
+// handlerFunc represents a handler function that can return an error.
+type handlerFunc func(http.ResponseWriter, *http.Request) error
+
+// serverConfig holds the configuration for creating a new server.
+type serverConfig struct {
+	addr         string
+	helloHandler handlerFunc
+}
+
 // NewServer creates and initializes a new HTTP server instance.
 // The addr parameter specifies the TCP address for the server to listen on.
 func NewServer(addr string) (server *Server, err error) {
@@ -27,20 +36,38 @@ func NewServer(addr string) (server *Server, err error) {
 		return
 	}
 
+	// Use the internal constructor with production handlers
+	config := serverConfig{
+		addr:         addr,
+		helloHandler: helloHandler,
+	}
+	
+	return newServerWithConfig(config)
+}
+
+// newServerWithConfig creates a new server with the provided configuration.
+// This is an internal constructor used for testing with dependency injection.
+func newServerWithConfig(config serverConfig) (server *Server, err error) {
+	if config.addr == "" {
+		err = fmt.Errorf("server address cannot be empty")
+		return
+	}
+
 	mux := http.NewServeMux()
 
 	server = &Server{
 		httpServer: &http.Server{
-			Addr:    addr,
+			Addr:    config.addr,
 			Handler: mux,
 		},
 		mux: mux,
 	}
 
-	// Set up all routes
-	err = server.setupRoutes()
+	// Set up all routes with the provided handlers
+	err = server.setupRoutesWithHandlers(config.helloHandler)
 	if err != nil {
 		err = fmt.Errorf("failed to setup routes: %w", err)
+		server = nil
 		return
 	}
 
