@@ -44,6 +44,9 @@ When implementing features, prioritize:
 ### Important Files
 - **`service/main.go`**: Application entry point with service lifecycle management and graceful shutdown handling
 - **`service/main_test.go`**: Unit tests for the application entry point
+- **`service/models/models.go`**: Core data model definitions including Card and Leader types
+- **`service/stores/leaders/leaders.go`**: Leader cards data store implementation with GetByID and GetAll functions
+- **`service/stores/leaders/leaders_test.go`**: Comprehensive unit tests for the leaders store
 - **`service/transport/httpapi/server.go`**: HTTP server implementation with service interface for graceful shutdown
 - **`service/transport/httpapi/server_test.go`**: Unit tests for the HTTP server
 - **`service/transport/httpapi/server_internal_test.go`**: Internal package tests for server implementation
@@ -68,6 +71,12 @@ When implementing features, prioritize:
 ```
 swutrack/
 ├── service/                     # Go application code
+│   ├── models/                 # Data models
+│   │   └── models.go          # Core data structures (Card, Leader, LegalFormats)
+│   ├── stores/                 # Data storage layer
+│   │   └── leaders/           # Leaders store implementation
+│   │       ├── leaders.go     # Leader cards data and access functions
+│   │       └── leaders_test.go# Unit tests for leaders store
 │   ├── transport/              # Transport layer
 │   │   └── httpapi/           # HTTP API implementation
 │   │       ├── handlers.go    # Request handlers

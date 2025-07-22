@@ -1,3 +1,6 @@
+// Package leaders provides a data store for Star Wars Unlimited leader cards.
+// It contains a comprehensive collection of leader cards with their attributes
+// and provides functions to retrieve individual leaders or the entire collection.
 package leaders
 
 import (
