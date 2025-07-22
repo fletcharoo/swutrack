@@ -13,41 +13,45 @@ import (
 func Test_GetByID_ValidCardReturnsCard(t *testing.T) {
 	// Setup expectations
 	expectedID := "SOR_001"
-	expectedCard := models.Card{
-		ID:       "SOR_001",
-		Name:     "Director Krennic",
-		Subtitle: "Aspiring to Authority",
-		Legal: models.LegalFormats{
-			Premier: true,
+	expectedLeader := models.Leader{
+		Card: models.Card{
+			ID:   "SOR_001",
+			Name: "Director Krennic",
+			Legal: models.LegalFormats{
+				Premier: true,
+			},
 		},
+		Subtitle: "Aspiring to Authority",
 	}
 
 	// Act
-	card, err := GetByID(expectedID)
+	leader, err := GetByID(expectedID)
 
 	// Assert
 	require.NoError(t, err, "GetByID should not return an error for valid card ID")
-	assert.Equal(t, expectedCard, card, "returned card should match expected")
+	assert.Equal(t, expectedLeader, leader, "returned leader should match expected")
 }
 
 func Test_GetByID_DifferentValidCardReturnsCorrectCard(t *testing.T) {
 	// Setup expectations
 	expectedID := "LOF_018"
-	expectedCard := models.Card{
-		ID:       "LOF_018",
-		Name:     "Anakin Skywalker",
-		Subtitle: "Tempted by the Dark Side",
-		Legal: models.LegalFormats{
-			Premier: true,
+	expectedLeader := models.Leader{
+		Card: models.Card{
+			ID:   "LOF_018",
+			Name: "Anakin Skywalker",
+			Legal: models.LegalFormats{
+				Premier: true,
+			},
 		},
+		Subtitle: "Tempted by the Dark Side",
 	}
 
 	// Act
-	card, err := GetByID(expectedID)
+	leader, err := GetByID(expectedID)
 
 	// Assert
 	require.NoError(t, err, "GetByID should not return an error for valid card ID")
-	assert.Equal(t, expectedCard, card, "returned card should match expected")
+	assert.Equal(t, expectedLeader, leader, "returned leader should match expected")
 }
 
 func Test_GetByID_EmptyIDReturnsError(t *testing.T) {
@@ -56,12 +60,12 @@ func Test_GetByID_EmptyIDReturnsError(t *testing.T) {
 	expectedErrorMsg := "card ID cannot be empty"
 
 	// Act
-	card, err := GetByID(emptyID)
+	leader, err := GetByID(emptyID)
 
 	// Assert
 	require.Error(t, err, "GetByID should return an error for empty ID")
 	assert.Equal(t, expectedErrorMsg, err.Error(), "error message should match expected")
-	assert.Empty(t, card, "card should be empty when error is returned")
+	assert.Empty(t, leader, "leader should be empty when error is returned")
 }
 
 func Test_GetByID_NonExistentIDReturnsError(t *testing.T) {
@@ -70,12 +74,12 @@ func Test_GetByID_NonExistentIDReturnsError(t *testing.T) {
 	expectedErrorMsg := `card with ID "INVALID_ID" not found`
 
 	// Act
-	card, err := GetByID(nonExistentID)
+	leader, err := GetByID(nonExistentID)
 
 	// Assert
 	require.Error(t, err, "GetByID should return an error for non-existent ID")
 	assert.Equal(t, expectedErrorMsg, err.Error(), "error message should match expected")
-	assert.Empty(t, card, "card should be empty when error is returned")
+	assert.Empty(t, leader, "leader should be empty when error is returned")
 }
 
 func Test_GetByID_CaseSensitiveCheck(t *testing.T) {
@@ -84,44 +88,44 @@ func Test_GetByID_CaseSensitiveCheck(t *testing.T) {
 	expectedErrorMsg := `card with ID "sor_001" not found`
 
 	// Act
-	card, err := GetByID(lowercaseID)
+	leader, err := GetByID(lowercaseID)
 
 	// Assert
 	require.Error(t, err, "GetByID should return an error for wrong case ID")
 	assert.Equal(t, expectedErrorMsg, err.Error(), "error message should match expected")
-	assert.Empty(t, card, "card should be empty when error is returned")
+	assert.Empty(t, leader, "leader should be empty when error is returned")
 }
 
 func Test_GetAll(t *testing.T) {
 	// Act
-	cards := GetAll()
+	leaders := GetAll()
 
 	// Assert basic properties
-	assert.NotEmpty(t, cards, "GetAll should return cards")
-	assert.Len(t, cards, len(leaderCards), "GetAll should return all cards from the map")
+	assert.NotEmpty(t, leaders, "GetAll should return leaders")
+	assert.Len(t, leaders, len(leaderCards), "GetAll should return all leaders from the map")
 
 	// Create a map to track unique IDs
 	seenIDs := make(map[string]bool)
 
-	// Verify each card
-	for _, card := range cards {
-		// Check that the card has required fields
-		assert.NotEmpty(t, card.ID, "card ID should not be empty")
-		assert.NotEmpty(t, card.Name, "card name should not be empty")
-		assert.NotEmpty(t, card.Subtitle, "card subtitle should not be empty")
+	// Verify each leader
+	for _, leader := range leaders {
+		// Check that the leader has required fields
+		assert.NotEmpty(t, leader.ID, "leader ID should not be empty")
+		assert.NotEmpty(t, leader.Name, "leader name should not be empty")
+		assert.NotEmpty(t, leader.Subtitle, "leader subtitle should not be empty")
 
 		// Check for duplicate IDs in the result
-		assert.False(t, seenIDs[card.ID], fmt.Sprintf("card ID %q should not be duplicated in results", card.ID))
-		seenIDs[card.ID] = true
+		assert.False(t, seenIDs[leader.ID], fmt.Sprintf("leader ID %q should not be duplicated in results", leader.ID))
+		seenIDs[leader.ID] = true
 
-		// Verify the card exists in the original map
-		originalCard, exists := leaderCards[card.ID]
-		assert.True(t, exists, fmt.Sprintf("card with ID %q should exist in leaderCards map", card.ID))
-		assert.Equal(t, originalCard, card, fmt.Sprintf("card with ID %q should match the original", card.ID))
+		// Verify the leader exists in the original map
+		originalLeader, exists := leaderCards[leader.ID]
+		assert.True(t, exists, fmt.Sprintf("leader with ID %q should exist in leaderCards map", leader.ID))
+		assert.Equal(t, originalLeader, leader, fmt.Sprintf("leader with ID %q should match the original", leader.ID))
 	}
 
-	// Verify we got all cards from the map
-	assert.Equal(t, len(leaderCards), len(seenIDs), "should have retrieved all unique cards from the map")
+	// Verify we got all leaders from the map
+	assert.Equal(t, len(leaderCards), len(seenIDs), "should have retrieved all unique leaders from the map")
 }
 
 func Test_GetAll_ReturnsNewSlice(t *testing.T) {
@@ -133,8 +137,8 @@ func Test_GetAll_ReturnsNewSlice(t *testing.T) {
 	assert.NotSame(t, &cards1, &cards2, "GetAll should return a new slice each time")
 
 	// Verify content is the same (convert to maps for order-independent comparison)
-	cards1Map := make(map[string]models.Card)
-	cards2Map := make(map[string]models.Card)
+	cards1Map := make(map[string]models.Leader)
+	cards2Map := make(map[string]models.Leader)
 	for _, card := range cards1 {
 		cards1Map[card.ID] = card
 	}
@@ -151,11 +155,11 @@ func Test_GetAll_ReturnsNewSlice(t *testing.T) {
 		require.True(t, exists, "original card should exist in leaderCards")
 
 		// Modify the returned slice
-		cards1[0] = models.Card{ID: "MODIFIED"}
+		cards1[0] = models.Leader{Card: models.Card{ID: "MODIFIED"}}
 
 		// Get fresh data and verify it wasn't affected
 		cards3 := GetAll()
-		cards3Map := make(map[string]models.Card)
+		cards3Map := make(map[string]models.Leader)
 		for _, card := range cards3 {
 			cards3Map[card.ID] = card
 		}
