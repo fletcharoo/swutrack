@@ -43,14 +43,23 @@ When implementing features, prioritize:
 
 ### Important Files
 - **`service/main.go`**: Application entry point with service lifecycle management and graceful shutdown handling
+- **`service/main_test.go`**: Unit tests for the application entry point
 - **`service/transport/httpapi/server.go`**: HTTP server implementation with service interface for graceful shutdown
+- **`service/transport/httpapi/server_test.go`**: Unit tests for the HTTP server
+- **`service/transport/httpapi/server_internal_test.go`**: Internal package tests for server implementation
 - **`service/transport/httpapi/routes.go`**: Route configuration that maps endpoints to handlers
+- **`service/transport/httpapi/routes_test.go`**: Unit tests for route configuration
 - **`service/transport/httpapi/handlers.go`**: HTTP request handlers implementation
+- **`service/transport/httpapi/handlers_test.go`**: Unit tests for request handlers
 - **`go.mod`**: Go module definition file for dependency management
+- **`go.sum`**: Go module checksums for dependency verification
 - **`Makefile`**: Build automation and development commands
 - **`compose.yaml`**: Docker Compose configuration for local development environment
 - **`service/Dockerfile`**: Multi-stage Docker build configuration for the application
+- **`README.md`**: Project overview and getting started documentation
+- **`LICENSE`**: MIT license file for the project
 - **`CLAUDE.md`**: Project instructions and coding standards for AI assistance
+- **`.gitignore`**: Git ignore rules for temporary files and system files
 - **`docs/api-endpoints.md`**: Comprehensive API endpoint documentation
 - **`docs/db-schema.sql`**: Complete database schema design
 - **`docs/star-wars-unlimited.md`**: Domain knowledge documentation for game mechanics
@@ -62,9 +71,14 @@ swutrack/
 │   ├── transport/              # Transport layer
 │   │   └── httpapi/           # HTTP API implementation
 │   │       ├── handlers.go    # Request handlers
+│   │       ├── handlers_test.go
 │   │       ├── routes.go      # Route definitions
-│   │       └── server.go      # HTTP server with service interface
+│   │       ├── routes_test.go
+│   │       ├── server.go      # HTTP server with service interface
+│   │       ├── server_test.go
+│   │       └── server_internal_test.go
 │   ├── main.go                # Application entry point with graceful shutdown
+│   ├── main_test.go           # Tests for main.go
 │   └── Dockerfile             # Container build configuration
 ├── docs/                       # Project documentation
 │   ├── api-endpoints.md       # API specification
@@ -81,6 +95,7 @@ swutrack/
 │   └── settings.local.json    # Local Claude settings
 ├── temp/                       # Temporary files (git ignored)
 ├── go.mod                      # Go module definition
+├── go.sum                      # Go module checksums
 ├── Makefile                    # Build automation
 ├── compose.yaml                # Docker Compose setup
 ├── README.md                   # Project overview

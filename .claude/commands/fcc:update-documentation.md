@@ -17,3 +17,7 @@ You **MUST** exclude the following files and directories when identifying outdat
 - `./temp/`
 - `./CLAUDE.md`
 - `./README.md`
+- `/Makefile`
+
+## Final Instructions
+- All changes **MUST** be meaningful, do **NOT** make changes that are simply synonyms.

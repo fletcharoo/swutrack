@@ -11,3 +11,4 @@ To guide an AI assistant through updating the relevant sections of the `CLAUDE.m
 ## Final Instructions
 - Do **NOT** include planned directories.
 - Do **NOT** include a note of directories mentioned in the technical stack or technical requirements that are not yet implemented.
+- All changes **MUST** be meaningful, do **NOT** make changes that are simply synonyms.
