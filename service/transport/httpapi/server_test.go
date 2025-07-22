@@ -14,10 +14,10 @@ func Test_NewServer_Success(t *testing.T) {
 	// Setup expectations
 	expectedAddr := ":8080"
 	expectedRunning := false
-	
+
 	// Act
 	server, err := NewServer(expectedAddr)
-	
+
 	// Assert
 	assert.NoError(t, err, "NewServer should not return an error with valid address")
 	require.NotNil(t, server, "server should not be nil after successful creation")
@@ -32,10 +32,10 @@ func Test_NewServer_EmptyAddress(t *testing.T) {
 	// Setup expectations
 	expectedAddr := ""
 	expectedErrorMsg := "server address cannot be empty"
-	
+
 	// Act
 	server, err := NewServer(expectedAddr)
-	
+
 	// Assert
 	require.Error(t, err, "NewServer should return an error for empty address")
 	assert.Contains(t, err.Error(), expectedErrorMsg, "error message should indicate empty address")
@@ -46,16 +46,16 @@ func Test_NewServer_EmptyAddress(t *testing.T) {
 func Test_newServerWithConfig_EmptyAddress(t *testing.T) {
 	// Setup expectations
 	expectedErrorMsg := "server address cannot be empty"
-	
+
 	// Arrange
 	config := serverConfig{
 		addr:         "",
 		helloHandler: helloHandler,
 	}
-	
+
 	// Act
 	server, err := newServerWithConfig(config)
-	
+
 	// Assert
 	require.Error(t, err, "newServerWithConfig should return an error for empty address")
 	assert.Contains(t, err.Error(), expectedErrorMsg, "error message should indicate empty address")
@@ -89,10 +89,10 @@ func Test_setupRoutesWithHandlers_Errors(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			// Arrange
 			server := tc.setupServer()
-			
+
 			// Act
 			err := server.setupRoutesWithHandlers(helloHandler)
-			
+
 			// Assert - all test cases are error cases
 			require.Error(t, err, "setupRoutesWithHandlers should return an error for test case: %s", name)
 			assert.Contains(t, err.Error(), tc.errorMsg, "error message should contain expected text for test case: %s", name)
@@ -103,7 +103,7 @@ func Test_setupRoutesWithHandlers_Errors(t *testing.T) {
 func Test_Server_Name(t *testing.T) {
 	// Setup expectations
 	expectedName := "HTTP Server"
-	
+
 	// Arrange
 	server := &Server{}
 
@@ -233,10 +233,10 @@ func Test_Server_Stop_Success(t *testing.T) {
 	// Start server first
 	errChan := make(chan error, 1)
 	server.Start(errChan)
-	
+
 	// Wait a bit for server to start
 	time.Sleep(expectedStartupDelay)
-	
+
 	// Check for startup errors
 	select {
 	case err := <-errChan:
@@ -252,7 +252,7 @@ func Test_Server_Stop_Success(t *testing.T) {
 
 	// Assert
 	assert.NoError(t, err, "Stop should not return an error for running server")
-	
+
 	// Verify server is no longer running
 	server.mu.Lock()
 	assert.Equal(t, expectedRunningAfterStop, server.isRunning, "server should not be running after successful stop")
@@ -304,14 +304,14 @@ func Test_Server_Stop_Errors(t *testing.T) {
 
 func Test_Server_StartStopIntegration(t *testing.T) {
 	// This test verifies the full lifecycle of starting and stopping a server
-	
+
 	// Setup expectations
 	expectedAddr := ":0"
 	expectedRunningAfterStart := true
 	expectedRunningAfterStop := false
 	expectedWaitTime := 100 * time.Millisecond
 	expectedTimeout := 5 * time.Second
-	
+
 	// Arrange
 	server, err := NewServer(expectedAddr)
 	require.NoError(t, err, "NewServer should succeed with valid address")
@@ -341,7 +341,7 @@ func Test_Server_StartStopIntegration(t *testing.T) {
 	// Stop the server
 	ctx, cancel := context.WithTimeout(context.Background(), expectedTimeout)
 	defer cancel()
-	
+
 	err = server.Stop(ctx)
 	assert.NoError(t, err, "Stop should succeed with valid context")
 
@@ -366,13 +366,13 @@ func (m *mockHTTPServer) ListenAndServe() error {
 
 func Test_Server_Start_ListenError(t *testing.T) {
 	// This test verifies that errors from ListenAndServe are properly sent to errChan
-	
+
 	// Setup expectations
 	expectedAddr := ":99999" // Invalid port to cause error
 	expectedErrorMessage := "HTTP server stopped unexpectedly"
 	expectedRunning := false
 	expectedTimeout := 1 * time.Second
-	
+
 	// Arrange
 	server := &Server{
 		httpServer: &http.Server{
@@ -408,10 +408,9 @@ func Test_Server_Stop_ShutdownError(t *testing.T) {
 	// 1. Context is already cancelled (but it returns nil in this case)
 	// 2. Server has active connections that don't close gracefully
 	// 3. Internal server errors (very rare)
-	
+
 	// Since we cannot reliably trigger a Shutdown error without complex mocking
 	// or modifying production code, we document that this error path exists
 	// for defensive programming purposes.
 	t.Skip("http.Server.Shutdown error path cannot be reliably triggered - defensive code")
 }
-

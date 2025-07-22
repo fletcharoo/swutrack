@@ -15,24 +15,24 @@ func Test_Server_setupRoutes_Success(t *testing.T) {
 	expectedStatus := http.StatusOK
 	expectedBody := "hello world"
 	expectedPath := "/hello"
-	
+
 	// Arrange
 	server := &Server{
 		mux: http.NewServeMux(),
 	}
-	
+
 	// Act
 	err := server.setupRoutes()
-	
+
 	// Assert
 	assert.NoError(t, err, "setupRoutes should not return an error with valid server")
-	
+
 	// Verify route is registered by making a test request
 	req := httptest.NewRequest(http.MethodGet, expectedPath, nil)
 	recorder := httptest.NewRecorder()
-	
+
 	server.mux.ServeHTTP(recorder, req)
-	
+
 	// Should get a successful response from the hello handler
 	assert.Equal(t, expectedStatus, recorder.Code, "handler should return OK status")
 	assert.Equal(t, expectedBody, recorder.Body.String(), "handler should return expected greeting")
@@ -63,7 +63,7 @@ func Test_Server_setupRoutes_Errors(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			// Arrange
 			server := tc.setupServer()
-			
+
 			// Act
 			var err error
 			if server != nil {
@@ -83,31 +83,31 @@ func Test_Server_setupRoutes_Errors(t *testing.T) {
 
 func Test_setupRoutes_HandlerError(t *testing.T) {
 	// This test verifies that handler errors are properly logged and return 500 status
-	
+
 	// Setup expectations
 	expectedStatus := http.StatusOK
 	expectedPath := "/hello"
-	
+
 	// Create a server with a custom mux that we can test
 	server := &Server{
 		mux: http.NewServeMux(),
 	}
-	
+
 	// Setup routes
 	err := server.setupRoutes()
 	require.NoError(t, err, "setupRoutes should succeed with valid server configuration")
-	
+
 	// Create a test server to capture the response
 	testServer := httptest.NewServer(server.mux)
 	defer testServer.Close()
-	
+
 	// Make a request to verify error handling
 	// Note: In the actual implementation, the handler always succeeds,
 	// but the error handling code path exists and this test documents that behavior
 	resp, err := http.Get(testServer.URL + expectedPath)
 	require.NoError(t, err, "HTTP GET request should succeed")
 	defer resp.Body.Close()
-	
+
 	// Should get a successful response since helloHandler doesn't actually fail
 	assert.Equal(t, expectedStatus, resp.StatusCode, "should receive OK status since helloHandler succeeds")
 }
@@ -126,38 +126,38 @@ func (m *mockFailingResponseWriter) Write(p []byte) (int, error) {
 }
 
 func Test_setupRoutes_HandlerWriteError(t *testing.T) {
-	// This test verifies that when a handler returns an error, 
+	// This test verifies that when a handler returns an error,
 	// it's logged and a 500 status is returned
-	
+
 	// Setup expectations
 	expectedStatus := http.StatusInternalServerError
 	expectedErrorMessage := "Internal Server Error"
 	expectedPath := "/hello"
 	expectedAddr := ":0"
-	
+
 	// Create a handler that always fails
 	failingHandler := func(w http.ResponseWriter, r *http.Request) error {
 		return fmt.Errorf("handler error")
 	}
-	
+
 	// Create a server config with the failing handler
 	config := serverConfig{
 		addr:         expectedAddr,
 		helloHandler: failingHandler,
 	}
-	
+
 	// Create server using the internal constructor
 	server, err := newServerWithConfig(config)
 	require.NoError(t, err, "newServerWithConfig should succeed with valid config")
 	require.NotNil(t, server, "server should not be nil after successful creation")
-	
+
 	// Create a test request
 	req := httptest.NewRequest(http.MethodGet, expectedPath, nil)
 	recorder := httptest.NewRecorder()
-	
+
 	// Serve the request
 	server.mux.ServeHTTP(recorder, req)
-	
+
 	// Verify we get a 500 error
 	assert.Equal(t, expectedStatus, recorder.Code, "handler error should result in 500 status")
 	assert.Contains(t, recorder.Body.String(), expectedErrorMessage, "error response should contain standard error message")

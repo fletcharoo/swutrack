@@ -13,7 +13,7 @@ import (
 // Server encapsulates the HTTP server and its configuration.
 // It implements the service interface for lifecycle management.
 type Server struct {
-	httpServer *http.Server  // The underlying HTTP server instance
+	httpServer *http.Server   // The underlying HTTP server instance
 	mux        *http.ServeMux // HTTP request multiplexer for routing
 	mu         sync.Mutex     // Protects concurrent access to isRunning
 	isRunning  bool           // Tracks whether the server is currently running
@@ -41,7 +41,7 @@ func NewServer(addr string) (server *Server, err error) {
 		addr:         addr,
 		helloHandler: helloHandler,
 	}
-	
+
 	return newServerWithConfig(config)
 }
 

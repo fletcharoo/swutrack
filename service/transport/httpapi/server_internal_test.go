@@ -4,14 +4,14 @@
 // that cannot be triggered under normal operation. While these tests are skipped
 // and don't provide runtime test coverage, they serve important purposes:
 //
-// 1. Documentation: They explicitly document which code paths are defensive
-//    programming that cannot be tested without modifying production code.
+//  1. Documentation: They explicitly document which code paths are defensive
+//     programming that cannot be tested without modifying production code.
 //
-// 2. Coverage Accountability: By documenting these paths, we acknowledge that
-//    we've considered them and made conscious decisions about testability.
+//  2. Coverage Accountability: By documenting these paths, we acknowledge that
+//     we've considered them and made conscious decisions about testability.
 //
-// 3. Future-Proofing: If implementation changes make these paths testable,
-//    these tests remind us to add proper coverage.
+//  3. Future-Proofing: If implementation changes make these paths testable,
+//     these tests remind us to add proper coverage.
 //
 // The untestable paths documented here represent good defensive programming
 // practices that handle edge cases that should never occur in practice.
@@ -26,7 +26,7 @@ import (
 // Test_newServerWithConfig_SetupRoutesError documents why the setupRoutesWithHandlers
 // error path in newServerWithConfig cannot be triggered in normal operation.
 func Test_newServerWithConfig_SetupRoutesError(t *testing.T) {
-	// The error handling at lines 68-72 in server.go (in newServerWithConfig) 
+	// The error handling at lines 68-72 in server.go (in newServerWithConfig)
 	// is defensive programming that cannot be triggered because:
 	//
 	// 1. The server is always properly initialized with a non-nil mux before
@@ -38,7 +38,7 @@ func Test_newServerWithConfig_SetupRoutesError(t *testing.T) {
 	// which provides coverage for those error conditions. The error handling in
 	// newServerWithConfig exists to catch any future modifications that might
 	// introduce failure modes.
-	
+
 	t.Skip("setupRoutesWithHandlers cannot fail in newServerWithConfig - defensive code")
 }
 
@@ -59,7 +59,7 @@ func Test_Stop_ShutdownError_Documentation(t *testing.T) {
 	// - Modifying the standard library behavior
 	//
 	// The error handling exists for robustness in production environments.
-	
+
 	t.Skip("http.Server.Shutdown error path - defensive programming")
 }
 
@@ -77,6 +77,6 @@ func TestCoverageDocumentation(t *testing.T) {
 	// - http.Server.Shutdown error in Stop (rare system errors)
 	//
 	// These represent good defensive programming practices.
-	
+
 	assert.True(t, true, "Documentation test - validates coverage strategy documentation")
 }
