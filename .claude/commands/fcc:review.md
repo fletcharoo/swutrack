@@ -9,7 +9,7 @@ To guide an AI assistant in performing a complete code and documentation review 
 3. **Analyze PRD:** Use deep thinking to fully understand the purpose and intent of the PRD.
 4. **Feature Alignment:** Analyze the uncommitted changes on the branch. Use deep thinking to fully understand the purpose and intent of the changes. Use your best judgement to determine whether the uncommitted changes align with the feature requirements described in the PRD.
 5. **Test Review:** Use your best judgement to determine whether tests adequately test the feature defined in the PRD. Including possible bugs and edge cases.
-6. **Code Coverage:** Run all tests with code coverage. If the code coverage is below 100%, add this finding to the report.
+6. **Code Coverage:** Run all tests with code coverage. If the code coverage is below 85%, add this finding to the report.
 7. **Code Quality Review:** Assess naming conventions, code organization, and adherence to established code style & conventions. Look for code duplication, complex functionality, and lack of modularity. Identify areas that would benefit from refactoring or improved readability.
 8. **Static Analysis:** Check for bugs, bad coding style, and potential logic errors. Identify dead code or unused variables/functions.
 9. **Security Analysis:** Identify hardcoded secrets, insecure coding patterns, or outdated dependencies. If the code uses external services or APIs, ensure proper handling of secrets and credentials.
