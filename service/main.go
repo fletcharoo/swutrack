@@ -5,6 +5,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -25,21 +26,70 @@ type service interface {
 	Stop(context.Context) error
 }
 
+// signalNotifier is an interface for signal notification (for testing).
+type signalNotifier interface {
+	// Notify registers the channel to receive notifications.
+	Notify(c chan<- os.Signal, sig ...os.Signal)
+	// Stop stops the notification.
+	Stop(c chan<- os.Signal)
+}
+
+// osSignalNotifier is the production implementation of signalNotifier.
+type osSignalNotifier struct{}
+
+// Notify registers the channel to receive OS signal notifications.
+func (osSignalNotifier) Notify(c chan<- os.Signal, sig ...os.Signal) {
+	signal.Notify(c, sig...)
+}
+
+// Stop stops the OS signal notifications for the given channel.
+func (osSignalNotifier) Stop(c chan<- os.Signal) {
+	signal.Stop(c)
+}
+
+// serverFactory is a function type for creating servers (for testing).
+type serverFactory func(addr string) (service, error)
+
+// config holds the application configuration.
+type config struct {
+	serverAddr      string
+	shutdownTimeout time.Duration
+	serverFactory   serverFactory
+	signalNotifier  signalNotifier
+}
+
+// defaultConfig returns the default production configuration.
+func defaultConfig() config {
+	return config{
+		serverAddr:      ":8080",
+		shutdownTimeout: 30 * time.Second,
+		serverFactory: func(addr string) (service, error) {
+			return httpapi.NewServer(addr)
+		},
+		signalNotifier: osSignalNotifier{},
+	}
+}
+
 // main initializes and starts the HTTP server on port 8080 with graceful shutdown support.
 // It handles OS signals (SIGINT, SIGTERM) to ensure clean termination of all services.
 func main() {
-	// Define the server address
-	const serverAddr = ":8080"
+	if err := run(defaultConfig()); err != nil {
+		log.Fatalf("Application failed: %v", err)
+	}
+}
 
+// run contains the main application logic with injected dependencies.
+func run(cfg config) (err error) {
 	// Log server startup information
 	log.Printf("Starting swutrack application")
 	log.Printf("Available endpoints:")
-	log.Printf("  GET http://localhost:8080/hello")
+	log.Printf("  GET http://localhost%s/hello", cfg.serverAddr)
 
 	// Create the HTTP server
-	server, err := httpapi.NewServer(serverAddr)
+	server, err := cfg.serverFactory(cfg.serverAddr)
 	if err != nil {
-		log.Fatalf("Failed to create server: %v", err)
+		err = fmt.Errorf("failed to create server: %w", err)
+		return
 	}
 
 	// Set up channels for coordination
@@ -48,11 +98,11 @@ func main() {
 
 	// Set up signal handling
 	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+	cfg.signalNotifier.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+	defer cfg.signalNotifier.Stop(sigChan)
 
 	// Create shutdown context with timeout
-	const shutdownTimeout = 30 * time.Second
-	ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), cfg.shutdownTimeout)
 	defer cancel()
 
 	// Create error channel with buffer size matching number of services
@@ -63,18 +113,8 @@ func main() {
 	startServices(ctx, shutdownChan, &wg, errChan, services...)
 
 	// Wait for shutdown signal or fatal error
-	select {
-	case sig := <-sigChan:
-		log.Printf("Received signal: %v, initiating graceful shutdown...", sig)
-	case err := <-errChan:
-		log.Printf("Fatal error: %v, initiating shutdown...", err)
-		// Drain any additional errors to prevent goroutine blocking
-		go func() {
-			for err := range errChan {
-				log.Printf("Additional error during shutdown: %v", err)
-			}
-		}()
-	}
+	shutdownReason := waitForShutdown(sigChan, errChan)
+	log.Printf("Shutdown reason: %s", shutdownReason)
 
 	// Trigger shutdown for all services
 	close(shutdownChan)
@@ -82,10 +122,28 @@ func main() {
 	// Wait for all services to stop
 	wg.Wait()
 
-	// Close error channel to signal the drain goroutine to exit
+	// Close error channel to signal any drain goroutine to exit
 	close(errChan)
 
 	log.Printf("All services stopped, exiting")
+	return nil
+}
+
+// waitForShutdown waits for either a signal or an error and returns the reason.
+func waitForShutdown(sigChan <-chan os.Signal, errChan <-chan error) (reason string) {
+	select {
+	case sig := <-sigChan:
+		reason = fmt.Sprintf("received signal: %v", sig)
+	case err := <-errChan:
+		reason = fmt.Sprintf("fatal error: %v", err)
+		// Drain any additional errors to prevent goroutine blocking
+		go func() {
+			for err := range errChan {
+				log.Printf("Additional error during shutdown: %v", err)
+			}
+		}()
+	}
+	return reason
 }
 
 // startServices manages the lifecycle of multiple services concurrently.
